@@ -116,8 +116,7 @@ def get_creation_time(path):
 # --------- main script -----------------
 
 def sortPhotos(src_dir, dest_dir, extensions, sort_format, move_files, removeDuplicates,
-               ignore_exif, day_begins):
-
+               ignore_exif, day_begins, dryrun):
 
     # some error checking
     if not os.path.exists(src_dir):
@@ -224,15 +223,19 @@ def sortPhotos(src_dir, dest_dir, extensions, sort_format, move_files, removeDup
             else:
                 break
 
-
         # finally move or copy the file
         if move_files:
-            shutil.move(src_file, dest_file)
+            print "Moving %s to %s" % (src_file, dest_file)
+            if not dryrun:
+                shutil.move(src_file, dest_file)
         else:
             if fileIsIdentical:
+                print "No action. Files are identical, %s to %s" % (src_file, dest_file)
                 continue  # if file is same, we just ignore it (for copy option)
             else:
-                shutil.copy2(src_file, dest_file)
+                print "Copying %s to %s" % (src_file, dest_file)
+                if not dryrun:
+                    shutil.copy2(src_file, dest_file)
 
 
     print
@@ -255,6 +258,7 @@ https://docs.python.org/2/library/datetime.html#strftime-and-strptime-behavior. 
 Use forward slashes / to indicate subdirectory(ies) (independent of your OS convention). \n\
 The default is '%%Y/%%m-%%b', which separates by year then month \n\
 with both the month number and name (e.g., 2012/12-Feb).")
+    parser.add_argument('-d', '--dryrun', action='store_true', help='Don\'t take any action. Instead print out what would happen happen')
     parser.add_argument('--keep-duplicates', action='store_true',
                         help='If file is a duplicate keep it anyway (after renmaing).')
     parser.add_argument('--extensions', type=str, nargs='+',
@@ -270,7 +274,4 @@ defaults to 0 which corresponds to midnight.  Useful for grouping pictures with 
     args = parser.parse_args()
 
     sortPhotos(args.src_dir, args.dest_dir, args.extensions, args.sort,
-              args.move, not args.keep_duplicates, args.ignore_exif, args.day_begins)
-
-
-
+              args.move, not args.keep_duplicates, args.ignore_exif, args.day_begins, args.dryrun)
